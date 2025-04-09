@@ -63,6 +63,7 @@ class DialogueView:
                                   x=window_x + helper_label_x, 
                                   y=window_y + helper_label_y).get(Label)
         
+        
         self.window.items.append(self.background)
         self.window.items.append(self.speaker_label)
         self.window.items.append(self.content_label)
