@@ -1,0 +1,6 @@
+pygame
+langchain
+langchain-community
+langchain-openai
+pydantic
+python-dotenv
