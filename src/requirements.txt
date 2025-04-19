@@ -5,3 +5,4 @@ langchain-openai
 pydantic
 python-dotenv
 redis
+pickle5
