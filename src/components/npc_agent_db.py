@@ -72,12 +72,10 @@ class NPCAgent:
             "nancy": {
                 "system_prompt": """
 
-                You will generate 10 conversations between Nancy, an NPC character and a player, who talks
-                like cranky Sheldon Cooper. Nancy is a cheerful lady and a diamond seller. Nancy will always 
-                talk about diamond and must sell diamond. When cranky Sheldon the player agrees to buy, Nancy will 
-                reply with only "! give 0 1". Each conversation must be within 30 characters. You will give a 
-                python list as output. Player's conversation will start with '- '. The response must nor contain 
-                character names.
+                You will reply as Nancy, a diamond seller who talks like a cheerful lady. You will
+                try to sell diamond. Your reply must be within 15 characters. You will set isSell 
+                to True only if the query says or shows clear intent to buy diamond. If isSell is
+                True, you will response with thanks and will say like here it is.
 
                 Your responses MUST be formatted as JSON with the following structure and provide no other text
                 \n{format_instructions}
@@ -86,12 +84,10 @@ class NPCAgent:
             },
             "albert": {
                 "system_prompt": """
-                You will generate 10 conversations between Albert, an NPC character and a player, who talks
-                like cranky Sheldon Cooper. Albert is a rude person and a axe seller. Albert will always 
-                talk about axe and must sell axe. When cranky Sheldon the player agrees to buy, Albert will 
-                reply with only "! give 2 1". Each conversation must be within 30 characters. You will give 
-                a python list as output. Player's conversation will start with '- '. The response must nor contain 
-                character names.
+                You will reply as Albert, an axe seller who talks like a savage pirate. You will
+                try to sell axe. Your reply must be within 15 characters. You will set isSell 
+                to True only if the query says or shows clear intent to buy axe. If isSell is
+                True, you will response with thanks and will say like here it is.
 
                 Your responses MUST be formatted as JSON with the following structure and provide no other text
                 \n{format_instructions}
@@ -101,7 +97,7 @@ class NPCAgent:
 
             "bob": {
                 "system_prompt": """
-                You will generate 10 conversations between Bob, an NPC character and a player, who talks
+                You will generate 5 conversations between Bob, an NPC character and a player, who talks
                 like cranky Sheldon Cooper. Bob is a person who talks like Albert Einstein. Each conversation 
                 must be within 30 characters. You will give a python list as output. Player's conversation will start
                 with '- '. The response must nor contain character names.
@@ -114,7 +110,7 @@ class NPCAgent:
 
             "amy": {
                 "system_prompt": """
-                You will generate 10 conversations between Amy, an NPC character and a player, who talks
+                You will generate 5 conversations between Amy, an NPC character and a player, who talks
                 like cranky Sheldon Cooper. Amy is a cranky lady who complains about the forest. Each conversation 
                 must be within 30 characters. You will give a python list as output. Player's conversation will start
                 with '- '.
@@ -128,7 +124,7 @@ class NPCAgent:
         
         
             
-        config = character_configs[self.character_name.lower()]
+        config = character_configs.get(self.character_name.lower(), character_configs["nancy"])
         system_prompt = config["system_prompt"]
         self.tools = config["tools"]
         
@@ -136,7 +132,7 @@ class NPCAgent:
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", system_prompt),
-                MessagesPlaceholder(variable_name="chat_history"),
+                ("placeholder"), "{chat_history}",
                 ("human", "{query}"),
                 ("placeholder", "{agent_scratchpad}")
             ]
@@ -158,8 +154,8 @@ class NPCAgent:
         
         for attempt in range(max_retries):
             try:
-                messages = self.chat_history.messages if hasattr(self.chat_history, "messages") else []
-                return self.agent_executor.invoke({"chat_history": messages, "query": query})
+                #messages = self.chat_history.messages if hasattr(self.chat_history, "messages") else []
+                return self.agent_executor.invoke({"chat_history": [], "query": query})
             except APIError as e:
                 if attempt < max_retries - 1:
                     print(f"API Error: {e}. Retrying in {retry_delay} seconds...")
@@ -167,9 +163,10 @@ class NPCAgent:
                     retry_delay *= 2  # Exponential backoff
                 else:
                     raise
+        
         messages = self.chat_history.messages if hasattr(self.chat_history, "messages") else []
 
-        return self.agent_executor.invoke({"chat_history": messages, "query": query})
+        return self.agent_executor.invoke({"chat_history": [], "query": query})
     
     def get_structured_response(self, raw_response: Dict[str, Any]) -> Optional[AgentResponse]:
         """
@@ -190,21 +187,31 @@ class NPCAgent:
             return None
         
 
-    def update_chat_history(self, previous_conversation):
+    def update_chat_history(self, user_message, agent_response=None):
         """
-        Add new messages to the chat history and save to Redis.
+        Update the chat history with both user message and agent response.
+        This ensures proper formatting for OpenAI API.
         
         Args:
-            user_message: The message from the user
-            ai_response: The response from the AI
+            user_message: String or list containing the user's message
+            agent_response: String or list containing the agent's response (optional)
         """
-        # Add messages to history
-        #self.chat_history.add_user_message(user_message)
-        #self.chat_history.add_ai_message(ai_response)
-        
-        # Update local storage
-        self.chat_storage.save_chat(self.character_name, previous_conversation)
 
+        user_msg = user_message[0] if isinstance(user_message, list) and user_message else user_message
+
+        # Initialize a new chat history if one doesn't exist
+        if not hasattr(self.chat_history, "add_user_message"):
+            self.chat_history = ChatMessageHistory()
+
+        if user_msg:
+            self.chat_history.add_user_message(str(user_msg))
+
+        if agent_response:
+            agent_msg = agent_response[0] if isinstance(agent_response, list) and agent_response else agent_response
+            if agent_msg:
+                self.chat_history.add_ai_message(str(agent_msg))
+        
+        self.chat_storage.save_chat(self.character_name, self.chat_history)
 
 # Example usage:
 
