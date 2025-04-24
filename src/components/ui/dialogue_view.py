@@ -9,9 +9,9 @@ from components.label import Label
 from core.input import is_key_just_pressed
 
 dialogue_box_width = 500  # The size, left and right, of the dialogue box in pixels
-dialogue_box_height = 200 # The size, up and down, of the dialogue box in pixels
-padding_bottom = 50       # Empty pixels separating the dialogue box and the bottom
-                          # of the window
+dialogue_box_height = 200  # The size, up and down, of the dialogue box in pixels
+padding_bottom = 50        # Empty pixels separating the dialogue box and the bottom
+                           # of the window
 
 # Where the name of the speaker is, in the dialogue box
 speaker_label_x = 50     
@@ -65,23 +65,24 @@ class DialogueView:
     def __init__(self, lines, npc, player, dialogue_box_sprite="text_box.png"):
         global active_dialogue_view
         active_dialogue_view = self
-        self.lines = lines
+        self.lines = lines if lines else []
         self.npc = npc
         self.player = player
         self.waiting_for_input = False
         self.input_text = ""
         self.active_input = False
         self.key_cooldown = {}  # To track key press cooldowns
+        self.processing_response = False
 
         from core.camera import camera
         window_x = camera.width/2 - dialogue_box_width/2
         window_y = camera.height - padding_bottom - dialogue_box_height
         self.window = create_window(window_x, window_y, 
-                                    dialogue_box_width, dialogue_box_height).get(Window)
+                                   dialogue_box_width, dialogue_box_height).get(Window)
         
         self.background = Entity(Sprite(dialogue_box_sprite, is_ui=True),
-                                 x=window_x,
-                                 y=window_y).get(Sprite)
+                                x=window_x,
+                                y=window_y).get(Sprite)
 
         self.speaker_label = Entity(Label("EBGaramond-ExtraBold.ttf", "", size=25), 
                                   x=window_x + speaker_label_x, 
@@ -98,17 +99,17 @@ class DialogueView:
         
         # Create a label for the input text
         self.input_label = Entity(Label("EBGaramond-Regular.ttf", 
-                                       "Click here to type...", 
-                                       size=20,
-                                       color=(220, 220, 220)), 
-                                x=window_x + input_box_x + 10, 
-                                y=window_y + input_box_y + 5).get(Label)
+                                      "Click here to type...", 
+                                      size=20,
+                                      color=(220, 220, 220)), 
+                               x=window_x + input_box_x + 10, 
+                               y=window_y + input_box_y + 5).get(Label)
         
         self.helper_label = Entity(Label("EBGaramond-Medium.ttf", 
-                                         "[Press Enter or Space]", 
-                                         size=20), 
-                                  x=window_x + helper_label_x, 
-                                  y=window_y + helper_label_y - 35).get(Label)
+                                       "[Press Enter or Space]", 
+                                       size=20), 
+                                x=window_x + helper_label_x, 
+                                y=window_y + helper_label_y - 35).get(Label)
         
         self.window.items.append(self.background)
         self.window.items.append(self.speaker_label)
@@ -223,6 +224,56 @@ class DialogueView:
         else:
             print(f"Unknown command {command}")
 
+    def process_player_input(self, player_input):
+        """Process the player's input by sending it to the NPC agent and getting a response"""
+        try:
+            # Get the NPC agent for this character
+            from components.npc_agent_db import NPCAgent
+            agent = NPCAgent(character_name=self.npc.obj_name, model="gpt-4o")
+            
+            # Send the player's input to the agent
+            raw_response = agent.run(player_input)
+            
+            # Parse the response from the agent
+            structured_response = agent.get_structured_response(raw_response)
+
+            if hasattr(structured_response, 'isSell') and structured_response.isSell:
+                # Add a give command for the appropriate item
+                if self.npc.obj_name.lower() == "nancy":
+                    self.command("! give 0 1")  # Diamond
+                elif self.npc.obj_name.lower() == "albert":
+                    self.command("! give 2 1")  # Axe
+            
+            
+            if structured_response and hasattr(structured_response, 'response'):
+                # Get the response line from the agent (just take the first one for now)
+                response_lines = structured_response.response
+
+                print("THis is inside response")
+                if response_lines and len(response_lines) > 0:
+                    # Add just the last response line to dialogue
+                    response_line = response_lines[-1]
+                    self.lines.append(response_line)
+                    
+                    # Update chat history in Redis
+                    agent.update_chat_history(player_input)
+                    
+                    print(f"Agent response: {response_line}")
+                else:
+                    # Fallback if no response lines
+                    self.lines.append(f"...")
+            else:
+                # Fallback response if something went wrong
+                self.lines.append(f"I'm not sure how to respond to that.")
+                print("Error: Could not get structured response from agent")
+                
+        except Exception as e:
+            # Add error handling
+            print(f"Error processing player input: {e}")
+            self.lines.append("Sorry, I didn't understand that.")
+            
+        return True
+
     def handle_typing(self):
         """Handle keyboard input for the text box"""
         # Handle backspace
@@ -234,9 +285,18 @@ class DialogueView:
         # Handle enter/return key
         if is_key_just_pressed(pygame.K_RETURN):
             if self.input_text:
+                # Store the player's input
+                player_input = self.input_text
+                
                 # Add player response to dialogue
-                player_line = f"- {self.input_text}"
-                self.lines.insert(self.current_line + 1, player_line)
+                player_line = f"- {player_input}"
+                self.lines.append(player_line)
+                
+                # Process the response through the NPC agent
+                self.process_player_input(player_input)
+                
+                # Reset the input box
+                self.input_text = ""
                 self.toggle_input_box(False)
                 self.waiting_for_input = False
                 self.next_line()
