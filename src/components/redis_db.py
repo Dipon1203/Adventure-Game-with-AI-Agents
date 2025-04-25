@@ -1,7 +1,8 @@
 import redis
 import pickle
 from langchain.memory import ChatMessageHistory
-from langchain.schema import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessage
+import json
 
 class RedisChatStorage:
     def __init__(self, host='localhost', port=6379, db=0, character_name = "nancy"):

@@ -7,10 +7,10 @@ from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
+from langchain.memory import ChatMessageHistory
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain_community.chat_message_histories import RedisChatMessageHistory
-from langchain.memory import ChatMessageHistory
 from components.redis_db import RedisChatStorage
 from openai import APIError
 
@@ -38,6 +38,8 @@ class NPCAgent:
         api_key = os.getenv("OPENAI_API_KEY")
         
         self.llm = ChatOpenAI(model=model, api_key=api_key)
+
+        #self.agent = agent
         
             
         # Set up character-specific configurations
@@ -73,9 +75,9 @@ class NPCAgent:
                 "system_prompt": """
 
                 You will reply as Nancy, a diamond seller who talks like a cheerful lady. You will
-                try to sell diamond. Your reply must be within 15 characters. You will set isSell 
+                try to sell diamond. Your reply must be within 30 characters. You will set isSell 
                 to True only if the query says or shows clear intent to buy diamond. If isSell is
-                True, you will response with thanks and will say like here it is.
+                True, you will thank and say something like here it is in the same sentence.
 
                 Your responses MUST be formatted as JSON with the following structure and provide no other text
                 \n{format_instructions}
@@ -85,9 +87,9 @@ class NPCAgent:
             "albert": {
                 "system_prompt": """
                 You will reply as Albert, an axe seller who talks like a savage pirate. You will
-                try to sell axe. Your reply must be within 15 characters. You will set isSell 
+                try to sell axe. Your reply must be within 30 characters. You will set isSell 
                 to True only if the query says or shows clear intent to buy axe. If isSell is
-                True, you will response with thanks and will say like here it is.
+                True, you will thank and say something like here it is in the same sentence.
 
                 Your responses MUST be formatted as JSON with the following structure and provide no other text
                 \n{format_instructions}
@@ -132,7 +134,7 @@ class NPCAgent:
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", system_prompt),
-                ("placeholder"), "{chat_history}",
+                MessagesPlaceholder(variable_name="chat_history"),
                 ("human", "{query}"),
                 ("placeholder", "{agent_scratchpad}")
             ]
@@ -151,11 +153,12 @@ class NPCAgent:
 
         max_retries = 3
         retry_delay = 1  # seconds
+
+        messages = self.chat_history.messages if hasattr(self.chat_history, "messages") else []
         
         for attempt in range(max_retries):
             try:
-                #messages = self.chat_history.messages if hasattr(self.chat_history, "messages") else []
-                return self.agent_executor.invoke({"chat_history": [], "query": query})
+                return self.agent_executor.invoke({"chat_history": messages, "query": query})
             except APIError as e:
                 if attempt < max_retries - 1:
                     print(f"API Error: {e}. Retrying in {retry_delay} seconds...")
@@ -166,7 +169,9 @@ class NPCAgent:
         
         messages = self.chat_history.messages if hasattr(self.chat_history, "messages") else []
 
-        return self.agent_executor.invoke({"chat_history": [], "query": query})
+        print(f"This is from inside run{messages}")
+
+        return self.agent_executor.invoke({"chat_history": messages, "query": query})
     
     def get_structured_response(self, raw_response: Dict[str, Any]) -> Optional[AgentResponse]:
         """
@@ -204,12 +209,13 @@ class NPCAgent:
             self.chat_history = ChatMessageHistory()
 
         if user_msg:
-            self.chat_history.add_user_message(str(user_msg))
+            self.chat_history.add_user_message(user_msg)
+            
 
         if agent_response:
             agent_msg = agent_response[0] if isinstance(agent_response, list) and agent_response else agent_response
-            if agent_msg:
-                self.chat_history.add_ai_message(str(agent_msg))
+            
+            self.chat_history.add_ai_message(agent_msg)
         
         self.chat_storage.save_chat(self.character_name, self.chat_history)
 

@@ -7,6 +7,7 @@ text_input_listeners = []
 scroll_delta = 0
 import pygame
 
+
 def is_key_pressed(key):
     return key in keys_down
 

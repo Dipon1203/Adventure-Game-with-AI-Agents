@@ -59,12 +59,26 @@ class NPC(Usable):
 
             agent = NPCAgent(character_name = self.obj_name, model = "gpt-4o")
 
-            query = "Generate the next"
+            query = ""
 
-            raw_response = agent.run(query)
-            lines = agent.get_structured_response(raw_response).response
+            try:
 
-            agent.update_chat_history(lines)
+                #raw_response = agent.run(query)
+                structured_response = agent.get_structured_response(raw_response)
+
+                """
+                if structured_response.response:
+                    lines = structured_response.response
+                else:
+                """
+                
+                lines = ["Hi, how can I help you?"]
+
+                agent.update_chat_history(lines)
+            
+            except Exception as e:
+                print(f"Error initializing NPC dialogue: {e}")
+                lines = [f"Hi, how can I help you?"]
 
             from components.ui.dialogue_view import DialogueView
             DialogueView(lines, self, player)

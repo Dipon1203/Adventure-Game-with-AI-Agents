@@ -30,18 +30,16 @@ input_box_x = 50
 input_box_y = 150
 input_box_width = 400
 input_box_height = 30
-
-# How many letters, per frame, are printed.
 letter_speed = 1
 
 active_dialogue_view = None
 
 class InputBox(Sprite):
-    def __init__(self, x=0, y=0, width=100, height=30):
-        # We're not calling Sprite.__init__ directly as our implementation is different
+    def __init__(self, x=0, y=0, width=100, height=40):
+
         self.entity = None
         self.surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        self.surface.fill((50, 50, 50, 180))  # More visible dark gray background
+        self.surface.fill((50, 50, 50, 180))  
         self.rect = pygame.Rect(0, 0, width, height)
         self.width = width
         self.height = height
@@ -58,13 +56,14 @@ class InputBox(Sprite):
 
     def breakdown(self):
         from core.engine import engine
+
         if self in engine.ui_drawables:
             engine.ui_drawables.remove(self)
 
 class DialogueView:
     def __init__(self, lines, npc, player, dialogue_box_sprite="text_box.png"):
-        global active_dialogue_view
-        active_dialogue_view = self
+
+
         self.lines = lines if lines else []
         self.npc = npc
         self.player = player
@@ -229,9 +228,18 @@ class DialogueView:
         try:
             # Get the NPC agent for this character
             from components.npc_agent_db import NPCAgent
-            agent = NPCAgent(character_name=self.npc.obj_name, model="gpt-4o")
+
+            if hasattr(self, 'agent'):
+                agent = self.agent
+            else:
+                agent = NPCAgent(character_name=self.npc.obj_name, model="gpt-4o")
+                self.agent = agent
             
             # Send the player's input to the agent
+
+            if player_input in ["bye","goodbye","bye bye"]:
+                self.breakdown()
+
             raw_response = agent.run(player_input)
             
             # Parse the response from the agent
@@ -249,7 +257,6 @@ class DialogueView:
                 # Get the response line from the agent (just take the first one for now)
                 response_lines = structured_response.response
 
-                print("THis is inside response")
                 if response_lines and len(response_lines) > 0:
                     # Add just the last response line to dialogue
                     response_line = response_lines[-1]
@@ -360,6 +367,7 @@ class DialogueView:
 
     def breakdown(self):
         from core.engine import engine
+
         engine.active_objs.remove(self)
         for c in self.window.items:
             c.breakdown()
