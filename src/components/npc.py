@@ -38,10 +38,10 @@ class static_NPC(Usable):
 class NPC(Usable):
 
     npc_conversation_dict = {
-            "Nancy": ["Hi, I'm Nancy", "- Hello"],
-            "Albert" : ["Hi, I'm Albert", "- Hello"],
-            "Amy" : ["Hi, I'm Amy", "- Hello"],
-            "Bob" : ["Hi, I'm Bob", "- Hello"]
+            "Nancy": ["Hi, I'm Nancy"],
+            "Albert" : ["Hi, I'm Albert"],
+            "Amy" : ["Hi, I'm Amy"],
+            "Bob" : ["Hi, I'm Bob"]
         }
     
     def __init__(self, obj_name, npc_file):
@@ -64,15 +64,13 @@ class NPC(Usable):
             try:
 
                 #raw_response = agent.run(query)
-                structured_response = agent.get_structured_response(raw_response)
+                #structured_response = agent.get_structured_response(raw_response)
 
                 """
                 if structured_response.response:
                     lines = structured_response.response
                 else:
                 """
-                
-                lines = ["Hi, how can I help you?"]
 
                 agent.update_chat_history(lines)
             
