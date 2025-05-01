@@ -7,7 +7,7 @@ padding = 5
 cursor_width = 2
 
 class TextInput(Label):
-    def __init__(self, font, text="", size=32, max_text=20, width=400, color=(255, 255, 255), on_change=None):
+    def __init__(self, font, text="", size=32, max_text=30, width=400, color=(255, 255, 255), on_change=None):
         super().__init__(font, text, size, color)
         self.on_change = on_change
         self.active = False
@@ -73,6 +73,8 @@ class TextInput(Label):
         if self.blink_step and self.active:
             screen.blit(self.cursor, (self.entity.x + self.surface.get_width() + padding, 
                                       self.entity.y + padding))
+
+
 
 
 
