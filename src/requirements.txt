@@ -7,3 +7,4 @@ python-dotenv
 redis
 pickle5
 pygame_functions
+duckduckgo-search

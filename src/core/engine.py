@@ -44,6 +44,9 @@ class Engine:
         from core.input import keys_down, mouse_buttons_down, \
                 mouse_buttons_just_pressed, keys_just_pressed, \
                 reset_scroll
+        
+        from components.ui.dialogue_view import active_dialogue_view
+        
         self.running = True
         while self.running:
             reset_scroll()
@@ -54,8 +57,15 @@ class Engine:
                 if event.type == pygame.QUIT:
                     self.running = False
                 elif event.type == pygame.KEYDOWN:
-                    keys_down.add(event.key)
-                    keys_just_pressed.add(event.key)
+
+                    if active_dialogue_view is not None and event.key in [pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d]:
+                        if active_dialogue_view.active_input:
+                            keys_down.add(event.key)
+                            keys_just_pressed.add(event.key)
+                    else:
+                        keys_down.add(event.key)
+                        keys_just_pressed.add(event.key)
+
                 elif event.type == pygame.KEYUP:
                     keys_down.remove(event.key)
                 elif event.type == pygame.MOUSEBUTTONDOWN:

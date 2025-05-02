@@ -13,6 +13,7 @@ from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 from components.redis_db import RedisChatStorage
 from openai import APIError
+from components.agent_tools import neighbor_tool, forest_tree_tool, search_tool
 
 
 # Load environment variables
@@ -21,6 +22,7 @@ load_dotenv()
 class AgentResponse(BaseModel):
     response: list 
     isSell: bool
+    tools_used: list[str]
 
 class NPCAgent:
     """
@@ -38,8 +40,6 @@ class NPCAgent:
         api_key = os.getenv("OPENAI_API_KEY")
         
         self.llm = ChatOpenAI(model=model, api_key=api_key)
-
-        #self.agent = agent
         
             
         # Set up character-specific configurations
@@ -65,7 +65,7 @@ class NPCAgent:
         This method sets up character-specific behaviors and capabilities.
         """
         # Default tools that all characters have access to
-        self.tools = []
+        self.tools = [neighbor_tool]
         
         # Character-specific configurations
 
@@ -74,53 +74,53 @@ class NPCAgent:
             "nancy": {
                 "system_prompt": """
 
-                You will reply as Nancy, a diamond seller who talks like a cheerful lady. You will
-                try to sell diamond. Your reply must be within 30 characters. You will set isSell 
-                to True only if the query says or shows clear intent to buy diamond. If isSell is
-                True, you will thank and say something like here it is in the same sentence.
+                You will reply as Nancy, a diamond seller who talks like a cheerful lovely lady. You will
+                try to sell diamond. Your reply to the query must be
+                within 50 characters and one sentence. You will set isSell to True only if one particular query says
+                or shows clear intent to buy diamond. For every other query, it will be False. 
+                If isSell is True, you will also thank for buying in one sentence.
 
                 Your responses MUST be formatted as JSON with the following structure and provide no other text
                 \n{format_instructions}
                 """,
-                "tools": [],
+                "tools": [neighbor_tool],
             },
             "albert": {
                 "system_prompt": """
-                You will reply as Albert, an axe seller who talks like a savage pirate. You will
-                try to sell axe. Your reply must be within 30 characters. You will set isSell 
-                to True only if the query says or shows clear intent to buy axe. If isSell is
+                You will reply as Albert, an axe seller who talks like a savage. You will
+                try to sell axe. Your reply to the query must be within 50 characters and one sentence. 
+                You will set isSell to True only if the query says or shows clear intent to buy axe. If isSell is
                 True, you will thank and say something like here it is in the same sentence.
+
+                If asked about trees in the Forest, you will consider number of trees before your reply.
 
                 Your responses MUST be formatted as JSON with the following structure and provide no other text
                 \n{format_instructions}
                 """,
-                "tools": [],
+                "tools": [neighbor_tool, forest_tree_tool],
             },
 
             "bob": {
                 "system_prompt": """
-                You will generate 5 conversations between Bob, an NPC character and a player, who talks
-                like cranky Sheldon Cooper. Bob is a person who talks like Albert Einstein. Each conversation 
-                must be within 30 characters. You will give a python list as output. Player's conversation will start
-                with '- '. The response must nor contain character names.
+                You will reply as Bob, the Eye of Sauron. You will talk like the eye of Sauron. 
+                Your reply must be within 50 characters and one sentence. You will set isSell to False always.
 
                 Your responses MUST be formatted as JSON with the following structure and provide no other text
                 \n{format_instructions}
                 """,
-                "tools": [],
+                "tools": [neighbor_tool, search_tool, forest_tree_tool]
             },
 
             "amy": {
                 "system_prompt": """
-                You will generate 5 conversations between Amy, an NPC character and a player, who talks
-                like cranky Sheldon Cooper. Amy is a cranky lady who complains about the forest. Each conversation 
-                must be within 30 characters. You will give a python list as output. Player's conversation will start
-                with '- '.
+                You will reply as Amy, a mad physics teacher. You will always be in teaching mood 
+                and will try to teach physics and ask questions about physics.  Your reply must be
+                within 50 characters and one sentence. You will set isSell to False always.
 
                 Your responses MUST be formatted as JSON with the following structure and provide no other text
                 \n{format_instructions}
                 """,
-                "tools": []
+                "tools": [neighbor_tool]
             }
         }
         
@@ -220,9 +220,6 @@ class NPCAgent:
         self.chat_storage.save_chat(self.character_name, self.chat_history)
 
 # Example usage:
-
-
-
 
 if __name__ == "__main__":
     # Create an agent with a specific character

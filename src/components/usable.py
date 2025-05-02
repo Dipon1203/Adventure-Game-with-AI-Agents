@@ -30,6 +30,7 @@ class Choppable(Usable):
         from components.player import Player, inventory
         from components.sprite import Sprite
         player = other.get(Player)
+
         if self.is_chopped:
             player.show_message("This tree is already chopped")
             return

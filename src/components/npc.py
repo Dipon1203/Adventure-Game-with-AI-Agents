@@ -38,10 +38,10 @@ class static_NPC(Usable):
 class NPC(Usable):
 
     npc_conversation_dict = {
-            "Nancy": ["Hi, I'm Nancy"],
-            "Albert" : ["Hi, I'm Albert"],
-            "Amy" : ["Hi, I'm Amy"],
-            "Bob" : ["Hi, I'm Bob"]
+            "Nancy": ["Hi, I'm Nancy!"],
+            "Albert" : ["Hey ya mate! Albert here!"],
+            "Amy" : ["Physics is everything!"],
+            "Bob" : ["I see everything!"]
         }
     
     def __init__(self, obj_name, npc_file):
