@@ -29,7 +29,7 @@ def get_neighbor_information(query: str) -> str:
             "character_details": "Sells Axe."
         },
         "bob": {
-            "name": "Eye of Sauron.",
+            "name": "Bob - the eye.",
             "role": "Know it all",
             "location": "East Forest",
             "character_details": "Knows about everything."
@@ -41,9 +41,6 @@ def get_neighbor_information(query: str) -> str:
             "character_details": "A mad person who talks about physics all the time."
         },
     }
-    """
-    return NPC database jodi hoy
-    """
 
     query_lower = query.lower()
     
@@ -73,74 +70,39 @@ def get_neighbor_information(query: str) -> str:
             if "axe" in info["character_details"].lower():
                 return f"{info['name']} sells axes. Location: {info['location']}"
     
-    return "Available NPCs:\n" + "\n".join([f"- {info['name']}: {info['role']} at {info['location']}" for _, info in npc_database.items()])
+    if "neighbors" in query_lower:
+        return f"There are {len(npc_database)} NPCs available in the forest. "
+
+
+    paragraph = f"There are {len(npc_database)} NPCs available in the forest. "
+    
+
+    paragraph += f"{npc_database['nancy']['name']} is a {npc_database['nancy']['role']} located in \
+        {npc_database['nancy']['location']}. Her character details indicate she \
+            {npc_database['nancy']['character_details']} "
+    
+    paragraph += f"{npc_database['albert']['name']} is a {npc_database['albert']['role']} who can be \
+        found in {npc_database['albert']['location']}. His character details show he \
+            {npc_database['albert']['character_details']}"
+    
+    paragraph += f"{npc_database['bob']['name']} has the role of {npc_database['bob']['role']} and \
+        is located in {npc_database['bob']['location']}. His character details state he \
+            {npc_database['bob']['character_details']}" 
+    
+    paragraph += f"{npc_database['amy']['name']} is a {npc_database['amy']['role']} situated in {npc_database['amy']['location']}. \
+                Her character details describe her as {npc_database['amy']['character_details']}"
+
+    return paragraph
 
 neighbor_tool = Tool(
     name = "get_neighbor_info",
     func = get_neighbor_information,
     description= """Provides details about other NPCs, including their names, roles, position\
-                    in map, and whether they can offer help. Use this tool when asked about \
-                    nearby characters, NPCs, or if the player is looking to buy something.
+                    in map, and whether they can sell things or what they sell. Use this tool when asked about \
+                    nearby characters, neighbors, or if the player is looking to buy something or looking for something.
                     """
 )
 
-
-"""
-def get_forest_tree_information(query: str = "") -> str:
-    
-    Provides information about choppable trees in the forest.
-    
-    Args:
-        query: Optional query string to filter the information
-        
-    Returns:
-        A string with information about forest trees
-    
-    from core.area import area
-    from components.usable import Choppable
-    
-    # Track trees and their states
-    chopped_trees = []
-    unchopped_trees = []
-    
-    # Scan all entities for Choppable trees
-    for entity in area.entities:
-        for component in entity.components:
-            if isinstance(component, Choppable) and component.obj_name == "Pine Tree":
-                position = (int(entity.x / 32), int(entity.y / 32))  # Convert to tile coordinates
-                
-                if component.is_chopped:
-                    chopped_trees.append(position)
-                else:
-                    unchopped_trees.append(position)
-    
-    # Prepare the response based on query
-    query_lower = query.lower()
-
-
-    
-    if any(word in query_lower for word in ["unchopped", "intact", "untouched"]):
-        response = f"Unchopped trees ({len(unchopped_trees)})"
-    elif any(word in query_lower for word in ["chopped", "cut", "touched"]):
-        response = f"Chopped trees ({len(chopped_trees)})"
-    else:
-        # Return summary information
-        total_trees = len(chopped_trees) + len(unchopped_trees)
-        response = f"Forest Tree Information:\n"
-        response += f"- Total trees: {total_trees}\n"
-        response += f"- Unchopped trees: {len(unchopped_trees)}\n"
-        response += f"- Chopped trees: {len(chopped_trees)}\n"
-        
-        if len(unchopped_trees) == 0:
-            response += "\nAll trees in this area have been chopped!"
-        else:
-            response += f"\nThere are {len(unchopped_trees)} trees available for chopping."
-            
-        response += "\n\nUse an axe to chop trees. You can buy an axe from Albert in the West Forest."
-    
-    return response
-
-"""
 
 def get_forest_tree_information(query: str = "") -> str:
     """

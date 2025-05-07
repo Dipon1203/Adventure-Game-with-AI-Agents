@@ -29,7 +29,7 @@ class NPCAgent:
     A configurable agent class that creates different agent personas based on character names.
     """
     
-    def __init__(self, character_name: str, model: str = "gpt-4o"):
+    def __init__(self, character_name: str, model: str = "gpt-4o" ):
 
         self.character_name = character_name
         self.parser = PydanticOutputParser(pydantic_object=AgentResponse)
@@ -74,14 +74,26 @@ class NPCAgent:
             "nancy": {
                 "system_prompt": """
 
-                You will reply as Nancy, a diamond seller who talks like a cheerful lovely lady. You will
-                try to sell diamond. Your reply to the query must be
-                within 50 characters and one sentence. You will set isSell to True only if one particular query says
-                or shows clear intent to buy diamond. For every other query, it will be False. 
-                If isSell is True, you will also thank for buying in one sentence.
+                You are Nancy, a cheerful diamond seller. When asked about Axe, you will mention\
+                    Albert. Your responses must follow these strict guidelines:
 
-                Your responses MUST be formatted as JSON with the following structure and provide no other text
-                \n{format_instructions}
+                1. Strictly format all responses as JSON with the following structure {format_instructions}.
+
+                2. The "response" field must:
+                - Contain exactly ONE string in the array
+                - Be 50 characters or less
+                - Be a single sentence
+                - Sound like a cheerful, lovely diamond seller
+
+                3. Set "isSell" to true ONLY when:
+                - The query explicitly states an intention to purchase a diamond
+                - The query clearly indicates a buying decision
+                
+                4. For all other queries, set "isSell" to false
+
+                5. If "isSell" is true, include a brief thank you message within your response.
+
+                Do not provide any text outside of the JSON structure. Ensure your JSON is properly formatted and valid.
                 """,
                 "tools": [neighbor_tool],
             },
@@ -89,8 +101,8 @@ class NPCAgent:
                 "system_prompt": """
                 You will reply as Albert, an axe seller who talks like a savage. You will
                 try to sell axe. Your reply to the query must be within 50 characters and one sentence. 
-                You will set isSell to True only if the query says or shows clear intent to buy axe. If isSell is
-                True, you will thank and say something like here it is in the same sentence.
+                You will set isSell to True only and only if the query says or shows clear intent to buy Axe.
+                For every other query, isSell will be False. If isSell is True, you will also thank for buying in one sentence.
 
                 If asked about trees in the Forest, you will consider number of trees before your reply.
 
@@ -236,7 +248,7 @@ if __name__ == "__main__":
 
         query = input("Your query: ")
 
-        if query.lower() in ["quit", "exit", "bye"]:
+        if query.lower() in ["quit", "exit", "bye", "ok bye"]:
             break
 
         # Run the agent

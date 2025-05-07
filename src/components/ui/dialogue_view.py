@@ -242,7 +242,7 @@ class DialogueView:
             
             structured_response = agent.get_structured_response(raw_response)
 
-            if player_input in ["bye","goodbye","bye bye"]:
+            if player_input in ["bye","goodbye","bye bye", "ok bye", "thanks bye"]:
                 self.lines = []
                 self.breakdown()
             else:
