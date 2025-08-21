@@ -17,8 +17,8 @@ An interactive 2D adventure game featuring NPCs powered by custom AI agents. The
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/adventure-game-with-aI-agents.git
-   cd adventure-game-with-aI-agents
+   git clone https://github.com/yourusername/adventure-game-with-ai-agents.git
+   cd adventure-game-with-ai-agents
    ```
 
 2. **Create a virtual environment**
