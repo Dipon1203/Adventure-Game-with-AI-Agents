@@ -17,8 +17,8 @@ An interactive 2D adventure game featuring NPCs powered by custom AI agents. The
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/ai-agents-adventure-game.git
-   cd ai-agents-adventure-game
+   git clone https://github.com/yourusername/Adventure-Game-with-AI-Agents.git
+   cd Adventure-Game-with-AI-Agents
    ```
 
 2. **Create a virtual environment**
@@ -42,18 +42,8 @@ An interactive 2D adventure game featuring NPCs powered by custom AI agents. The
 
 4. **Start the game**
    ```bash
-   python src/main.py
+   python main.py
    ```
-
-## 🗺️ Project Structure
-```
-adventure_game_python_ai_agent/
-├── components/         # Game components and AI systems
-├── content/           # Game assets and resources
-├── docs/             # Documentation
-└── src/              # Source code
-```
-
 
 ## 🎮 How to Play
 
