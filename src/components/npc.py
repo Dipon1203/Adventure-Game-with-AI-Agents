@@ -57,7 +57,7 @@ class NPC(Usable):
 
             lines = self.npc_conversation_dict[self.obj_name]
 
-            agent = NPCAgent(character_name = self.obj_name, model = "gpt-4o")
+            agent = NPCAgent(character_name = self.obj_name, model = "gpt-4o-mini")
 
             query = ""
 

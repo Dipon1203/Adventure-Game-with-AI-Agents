@@ -1,29 +1,79 @@
-# Adventure Game in Python & PyGame
+# AI Agent's Adventure Game 🎮
 
-Would you like to build a 2D adventure game with Python and PyGame? This code is from a **free video series on YouTube** which you can watch to build a game like this step-by-step!
+An interactive 2D adventure game featuring NPCs powered by custom AI agents. The game has been developed with Python, PyGame, and LangChain.
 
-The playlist on YouTube for each step can be found here [Pygame - Adventure Game](https://youtube.com/playlist?list=PLn8cgfOA2qzeXxXe7DBWxX1UR5fJ4MDTb&si=BAjE1NPnPxDdv5rP).
+![Game Banner](assets/banner.png)
 
-![Pygame Adventure Game](https://alexander-farrell.nyc3.digitaloceanspaces.com/media/adventure_game_banner.webp)
+## ✨ Features
 
-## Quickstart
+### 🤖 AI Systems
+- **Autonomous NPC Agents**: NPCs with individual personalities and decision-making capabilities
+- **Dynamic Conversations**: Natural language processing for realistic NPC interactions
 
-1. Open a terminal at the project location. In VSCode, go to the top where it says Terminal, and click New Terminal. If you don't see terminal, you may see three dots near the top left, click those and see if Terminal is under those.
-2. Create a virtual environment. Run `python3 -m venv venv`. If you get an error, try `python -m venv venv`. If this still does not work, ensure [Python is installed on your system](https://www.python.org/downloads/).
-3. Activate the virtual environment. On MacOS, Linux and Unix, run `source venv/bin/activate`. On Windows, run `venv/Scripts/activate`.
-4. Install Pygame by typing `pip install pygame`.
-5. Run the game by typing `python3 src/main.py`. If this doesn't succeed, try `python src/main.py`.
 
-## Navigation
+## 🚀 Getting Started
 
-|         Item         |  Description  |
-|----------------------|---------------|
-| [content](./content) | Asset files (images, map data, etc.) is here |
-| [docs](./docs)       | Documentation for our game (coming soon) |
-| [src](./src)         | Python code for the game is here. |
+### Installation
 
-## Using the Code in Your Own Games
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/ai-agents-adventure-game.git
+   cd ai-agents-adventure-game
+   ```
 
-You are absolutely allowed to use the code and assets from this game in your own games, even commercially, and even for closed source games you make, as long as you agree to the [license](./LICENSE) included in this project.
+2. **Create a virtual environment**
+   
+   Windows:
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate
+   ```
 
-My goal is to help you in making your own games, and I hope this work can be of value to you.
+   MacOS/Linux:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Start the game**
+   ```bash
+   python src/main.py
+   ```
+
+## 🗺️ Project Structure
+```
+adventure_game_python_ai_agent/
+├── components/         # Game components and AI systems
+├── content/           # Game assets and resources
+├── docs/             # Documentation
+└── src/              # Source code
+```
+
+
+## 🎮 How to Play
+
+### Basic Controls
+- **W** - Move Up
+- **A** - Move Left
+- **S** - Move Down
+- **D** - Move Right
+- **Mouse Click** - Attack with weapon/Start NPC dialogue
+
+
+### Getting Started in the Game
+1. Move around using W,A,S,D keys
+2. Find and pick up the sword by walking over it in the forest
+3. Use the sword on enemies by mouse clicks to defeat them.
+
+### Interacting with NPCs
+1. Go near the characters and click on them to start dialogue  
+1.1. Nancy – Sells diamonds  
+1.2. Albert – Sells axes  
+1.3. Bob – Uses web browsing to answer query  
+1.4. Amy – Teaches physics as a mad person  
+2. To end dialogue, type "Bye".

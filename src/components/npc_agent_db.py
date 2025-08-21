@@ -1,5 +1,4 @@
 import os
-import redis
 import time
 from dotenv import load_dotenv
 from typing import List, Dict, Any, Optional
@@ -10,10 +9,17 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain.memory import ChatMessageHistory
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain.agents import create_tool_calling_agent, AgentExecutor
-from langchain_community.chat_message_histories import RedisChatMessageHistory
-from components.redis_db import RedisChatStorage
 from openai import APIError
 from components.agent_tools import neighbor_tool, forest_tree_tool, search_tool
+from components.local_storage import LocalChatStorage
+
+try:
+    import redis
+    from langchain_community.chat_message_histories import RedisChatMessageHistory
+    from components.redis_db import RedisChatStorage
+    REDIS_AVAILABLE = True
+except (ImportError, ModuleNotFoundError):
+    REDIS_AVAILABLE = False
 
 
 # Load environment variables
@@ -29,12 +35,24 @@ class NPCAgent:
     A configurable agent class that creates different agent personas based on character names.
     """
     
-    def __init__(self, character_name: str, model: str = "gpt-4o" ):
+    def __init__(self, character_name: str, model: str = "gpt-4o-mini" ):
 
         self.character_name = character_name
         self.parser = PydanticOutputParser(pydantic_object=AgentResponse)
 
-        self.chat_storage = RedisChatStorage()
+        if REDIS_AVAILABLE:
+            try:
+                self.chat_storage = RedisChatStorage(character_name=character_name)
+                # Test connection to see if Redis is running
+                self.chat_storage.redis_client.ping()
+                print("Using Redis for chat storage")
+            except (redis.exceptions.ConnectionError, AttributeError) as e:
+                print(f"Redis connection failed: {e}. Falling back to local storage.")
+                self.chat_storage = LocalChatStorage(character_name=character_name)
+        else:
+            print("Redis not available. Using local storage for chat history.")
+            self.chat_storage = LocalChatStorage(character_name=character_name)
+
         self.chat_history = self.chat_storage.load_chat(character_name)
         
         api_key = os.getenv("OPENAI_API_KEY")
@@ -74,8 +92,7 @@ class NPCAgent:
             "nancy": {
                 "system_prompt": """
 
-                You are Nancy, a cheerful diamond seller. When asked about Axe, you will mention\
-                    Albert. Your responses must follow these strict guidelines:
+                You are Nancy, a cheerful diamond seller. Your responses must follow these strict guidelines:
 
                 1. Strictly format all responses as JSON with the following structure {format_instructions}.
 
