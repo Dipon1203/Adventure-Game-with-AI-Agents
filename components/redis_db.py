@@ -52,36 +52,3 @@ class RedisChatStorage:
         """Delete a chat history by key"""
         self.redis_client.delete(key)
         print(f"Chat deleted for key: {key}")
-
-
-# Example usage:
-
-# Initialize the storage
-
-
-# Example: Creating and saving Nancy's chat
-
-"""
-
-
-
-# Later: retrieve and continue a chat
-def continue_chat(name):
-    chat = chat_storage.load_chat(name)
-    print(f"\nContinuing {name}'s chat:")
-    for message in chat.messages:
-        if isinstance(message, HumanMessage):
-            print(f"Human: {message.content}")
-        elif isinstance(message, AIMessage):
-            print(f"AI: {message.content}")
-    
-    # Add a new message
-    chat.add_user_message(f"Hello again, this is a new message for {name}")
-    chat.add_ai_message("Nice to see you again!")
-    
-    # Save the updated chat
-    chat_storage.save_chat(name, chat)
-
-# Continue Nancy's chat
-continue_chat("nancy")
-"""

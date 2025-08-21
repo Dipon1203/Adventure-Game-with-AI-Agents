@@ -53,12 +53,10 @@ class NPCAgent:
             self.chat_storage = LocalChatStorage(character_name=character_name)
 
         self.chat_history = self.chat_storage.load_chat(character_name)
-        
+
         api_key = os.getenv("OPENAI_API_KEY")
-        
         self.llm = ChatOpenAI(model=model, api_key=api_key)
         
-            
         # Set up character-specific configurations
         self._configure_character()
         
@@ -85,8 +83,6 @@ class NPCAgent:
         self.tools = [neighbor_tool]
         
         # Character-specific configurations
-
-
         character_configs = {
             "nancy": {
                 "system_prompt": """
@@ -184,7 +180,6 @@ class NPCAgent:
             },
         }
         
-        
             
         config = character_configs.get(self.character_name.lower(), character_configs["nancy"])
         system_prompt = config["system_prompt"]
@@ -236,12 +231,6 @@ class NPCAgent:
     def get_structured_response(self, raw_response: Dict[str, Any]) -> Optional[AgentResponse]:
         """
         Parse the raw response into a structured AgentResponse object.
-        
-        Args:
-            raw_response: The raw response from the agent_executor
-            
-        Returns:
-            A AgentResponse object if parsing succeeds, None otherwise
         """
         try:
             structured_response = self.parser.parse(raw_response.get("output"))
@@ -256,10 +245,6 @@ class NPCAgent:
         """
         Update the chat history with both user message and agent response.
         This ensures proper formatting for OpenAI API.
-        
-        Args:
-            user_message: String or list containing the user's message
-            agent_response: String or list containing the agent's response (optional)
         """
 
         user_msg = user_message[0] if isinstance(user_message, list) and user_message else user_message
@@ -280,39 +265,23 @@ class NPCAgent:
         self.chat_storage.save_chat(self.character_name, self.chat_history)
 
 # Example usage:
-
 if __name__ == "__main__":
     # Create an agent with a specific character
-
-    
-    #chat_history = []
 
     character_name = "Nancy"
     agent = NPCAgent(character_name = character_name, model = "gpt-4o")
     
     # Get user query
-
     while True:
-
         query = input("Your query: ")
-
         if query.lower() in ["quit", "exit", "bye", "ok bye"]:
             break
 
         # Run the agent
         raw_response = agent.run(query)
-        #print(f"This is raw response: {raw_response}")
-
     
         # Parse the response
         structured_response = agent.get_structured_response(raw_response).response
-
-        #chat_history.append(HumanMessage(content=query))
-        #chat_history.append(AIMessage(content=structured_response))
-
-        #chat_history.add_user_message(query)
-        #chat_history.add_ai_message(structured_response)
-
         agent.update_chat_history(query, structured_response)
 
         if structured_response:

@@ -2,7 +2,6 @@ from components.usable import Usable
 from components.npc_agent_db import NPCAgent
 from components.ui.dialogue_view import DialogueView
 
-
 npc_folder_location = "content/npcs"
 npc_talk_distance = 150
 
@@ -28,7 +27,6 @@ class static_NPC(Usable):
             lines = data.split('\n')
 
             print(lines)
-            
             
             from components.ui.dialogue_view import DialogueView
             DialogueView(lines, self, player)
@@ -56,22 +54,10 @@ class NPC(Usable):
         if distance < npc_talk_distance:
 
             lines = self.npc_conversation_dict[self.obj_name]
-
             agent = NPCAgent(character_name = self.obj_name, model = "gpt-4o-mini")
-
             query = ""
 
             try:
-
-                #raw_response = agent.run(query)
-                #structured_response = agent.get_structured_response(raw_response)
-
-                """
-                if structured_response.response:
-                    lines = structured_response.response
-                else:
-                """
-
                 agent.update_chat_history(lines)
             
             except Exception as e:

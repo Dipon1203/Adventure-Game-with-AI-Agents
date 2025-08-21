@@ -175,14 +175,11 @@ def get_forest_tree_information(query: str = "") -> str:
     paragraph += f"The southwest has {sw_unchopped} unchopped and {sw_chopped} chopped trees. "
     
     # Add a recommendation based on the best quadrant
-    
     if best_quadrant[1] > 0:
         paragraph += f"The {best_quadrant[0]} quadrant has the most trees with {best_quadrant[1]} unchopped trees available."
     else:
         paragraph += "There are no unchopped trees available in any quadrant."
-    
 
-    
     return paragraph
 
 
